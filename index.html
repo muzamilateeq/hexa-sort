@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  /* Developed by Muzammil */
+  Hexa Sort - Color Tile Sorting & Merge Puzzle Game
+  A modern, high-performance HTML5 Canvas casual puzzle game
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1c29">
+  <meta name="description" content="Hexa Sort - Casual 2D Hexagonal Color Tile Sorting and Merge Puzzle Game. Stack, sort, cascade, and clear hexagonal tiles in this addictive 60fps web game.">
+  <title>Hexa Sort - Hexagonal Color Tile Sorting Puzzle</title>
+
+  <!-- Google Fonts: Fredoka & Outfit for sleek casual game typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=11">
+</head>
+<body>
+  <!-- Orientation Overlay for Mobile Landscape -->
+  <div id="orientation-overlay" class="orientation-overlay">
+    <div class="orientation-content">
+      <div class="rotate-phone-anim">📱</div>
+      <h2>Please Rotate to Portrait</h2>
+      <p>Hexa Sort is designed to be played in vertical portrait mode.</p>
+    </div>
+  </div>
+
+  <div id="game-wrapper">
+    <!-- Top HUD Navigation / Score / Level Info (Matching gameplay-mockup.jpg) -->
+    <header id="game-header">
+      <button id="btn-back" class="hdr-btn" aria-label="Undo Move" title="Undo Move">
+        <img src="assets/game-page-ui/btn-back.png" class="hdr-btn-img" alt="Back / Undo">
+      </button>
+
+      <div class="hdr-center">
+        <div class="level-pill-wrap">
+          <img src="assets/game-page-ui/level-bg.png" class="level-bg-img" alt="">
+          <span id="level-display" class="level-text">LEVEL 5</span>
+        </div>
+        <div class="score-pill-wrap">
+          <img src="assets/game-page-ui/score-bg.png" class="score-bg-img" alt="">
+          <img src="assets/game-page-ui/star.png" class="score-star-img" alt="Star">
+          <span id="score-display" class="score-text">1,450</span>
+        </div>
+      </div>
+
+      <button id="btn-pause" class="hdr-btn" aria-label="Pause Game" title="Pause Game">
+        <img src="assets/game-page-ui/btn-pause.png" class="hdr-btn-img" alt="Pause">
+      </button>
+    </header>
+
+    <!-- Main Interactive HTML5 Canvas -->
+    <main id="canvas-container">
+      <canvas id="game-canvas"></canvas>
+      
+      <!-- Floating Combo Notification -->
+      <div id="combo-banner" class="hidden">
+        <span id="combo-text">COMBO x2!</span>
+      </div>
+    </main>
+
+    <!-- MODALS & OVERLAYS -->
+
+    <!-- Pause Menu Modal -->
+    <div id="modal-pause" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2 class="modal-title">GAME PAUSED</h2>
+        <div class="modal-buttons">
+          <button id="btn-resume" class="btn btn-primary">Resume</button>
+          <button id="btn-restart-pause" class="btn btn-secondary">Restart Level</button>
+          <button id="btn-main-menu-pause" class="btn btn-secondary">Main Menu</button>
+          <button id="btn-how-to-play-pause" class="btn btn-tertiary">How to Play</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Complete / Victory Modal -->
+    <div id="modal-level-win" class="modal-overlay hidden">
+      <div class="modal-card modal-celebrate">
+        <div class="stars-row">
+          <span class="star active">★</span>
+          <span class="star active">★</span>
+          <span class="star active">★</span>
+        </div>
+        <h2 class="modal-title celebration-text">LEVEL COMPLETE!</h2>
+        <p class="modal-desc">Brilliant sorting! All level goals cleared.</p>
+        <div class="modal-stats">
+          <div class="modal-stat-box">
+            <span class="label">Score</span>
+            <span id="win-score" class="val">1,240</span>
+          </div>
+          <div class="modal-stat-box">
+            <span class="label">Bonus</span>
+            <span id="win-bonus" class="val">+250</span>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button id="btn-next-level" class="btn btn-primary pulse-btn">Next Level ➔</button>
+          <button id="btn-main-menu-win" class="btn btn-secondary">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="modal-game-over" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="game-over-icon">💔</div>
+        <h2 class="modal-title">NO MORE MOVES!</h2>
+        <p class="modal-desc">The board is full and no valid placements remain.</p>
+        <div class="modal-stats">
+          <div class="modal-stat-box">
+            <span class="label">Final Score</span>
+            <span id="gameover-score" class="val">0</span>
+          </div>
+          <div class="modal-stat-box">
+            <span class="label">High Score</span>
+            <span id="gameover-best" class="val">0</span>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button id="btn-revive-ad" class="btn btn-reward">
+            <span>📺 Watch Ad to Clear Slots (+Revive)</span>
+          </button>
+          <button id="btn-restart-gameover" class="btn btn-primary">Play Again</button>
+          <button id="btn-main-menu-gameover" class="btn btn-secondary">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How to Play / Instructions Modal -->
+    <div id="modal-instructions" class="modal-overlay hidden">
+      <div class="modal-card modal-wide">
+        <h2 class="modal-title">HOW TO PLAY</h2>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-icon">1️⃣</div>
+            <div class="step-text">
+              <strong>Drag or Tap to Place:</strong>
+              <p>Move an incoming stack from the bottom slots onto any empty board slot.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-icon">2️⃣</div>
+            <div class="step-text">
+              <strong>Match Top Colors:</strong>
+              <p>Place tiles adjacent to matching colors. Identical color tiles automatically fly and merge together!</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-icon">3️⃣</div>
+            <div class="step-text">
+              <strong>Clear 10-Stacks:</strong>
+              <p>When a slot gathers 10 tiles of the same color, it explodes in a burst of points!</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-icon">4️⃣</div>
+            <div class="step-text">
+              <strong>Create Combos:</strong>
+              <p>Clearing a stack reveals the color underneath, sparking wild chain reaction combos!</p>
+            </div>
+          </div>
+        </div>
+        <button id="btn-close-instructions" class="btn btn-primary">Got It! Let's Play</button>
+      </div>
+    </div>
+
+    <!-- Rewarded Ad Mock Simulation Modal (demonstrating hook integration) -->
+    <div id="modal-ad-simulation" class="modal-overlay hidden">
+      <div class="ad-card">
+        <div class="ad-header">
+          <span class="ad-badge">SPONSORED ADVERTISEMENT</span>
+          <span id="ad-timer" class="ad-timer">Reward in 3s</span>
+        </div>
+        <div class="ad-content">
+          <div class="ad-loader-spinner"></div>
+          <h3>Simulating Video Ad...</h3>
+          <p>Hook point: <code>window.showRewardedAd()</code></p>
+        </div>
+        <button id="btn-close-ad" class="btn btn-secondary" disabled>Close Ad</button>
+      </div>
+    </div>
+
+    <!-- Game Loading Screen (Faithful match to mockup) -->
+    <div id="loading-screen" role="dialog" aria-label="Game Loading Screen">
+      <!-- Ambient light effect -->
+      <div class="loading-sunburst"></div>
+
+      <!-- 1. Top Game Logo -->
+      <div class="loading-logo-wrap">
+        <img src="assets/loading-screen/game-lod-logo.png" class="loading-logo-img" alt="Hexa Stack Logo">
+      </div>
+
+      <!-- 2. Center 3D Stack Gameplay Illustration -->
+      <div class="loading-center-wrap">
+        <img src="assets/loading-screen/center-stack.png" class="loading-stack-img" alt="Hexa Stack Visual">
+        <img src="assets/loading-screen/decoration.png" class="loading-decor-img" alt="Confetti and Stars">
+        <img src="assets/loading-screen/dacoation-coin.png" class="floating-gem gem-top-right" alt="Gem">
+        <img src="assets/loading-screen/dacoation-coin.png" class="floating-gem gem-bottom-left" alt="Gem">
+      </div>
+
+      <!-- 3. Bottom Loading Progress Section -->
+      <div class="loading-bottom-wrap">
+        <div id="loading-status-text" class="loading-text">Loading... <span id="loading-percentage">0%</span></div>
+
+        <!-- Wooden Bar Container with Dynamic 3-Slice Liquid Progress -->
+        <div class="loading-bar-widget">
+          <img src="assets/loading-screen/loading-bar-bg.png" class="loading-bar-frame" alt="Loading Bar Frame">
+          <div class="loading-bar-track">
+            <canvas id="loading-bar-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Tap to Play Button (Reveals at 100%) -->
+        <button id="btn-play-now" class="btn-play-now hidden" aria-label="Start Game">
+          <span>PLAY NOW ▶</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Game Scripts (Modular Architecture) -->
+  <script src="js/audio.js?v=11"></script>
+  <script src="js/hex.js?v=11"></script>
+  <script src="js/particles.js?v=11"></script>
+  <script src="js/ads.js?v=11"></script>
+  <script src="js/game.js?v=11"></script>
+  <script src="js/loading.js?v=11"></script>
+</body>
+</html>
